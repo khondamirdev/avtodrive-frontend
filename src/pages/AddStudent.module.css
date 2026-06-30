@@ -1,0 +1,59 @@
+.page { max-width: 560px; }
+
+.header { margin-bottom: 24px; }
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none;
+  color: var(--gray-500); font-size: 13px; font-family: inherit;
+  margin-bottom: 12px; padding: 0;
+  cursor: pointer;
+}
+.back:hover { color: var(--gray-700); }
+.title { font-size: 20px; font-weight: 600; color: var(--gray-900); }
+
+.successBanner {
+  background: var(--green-50);
+  color: var(--green-700);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+
+.form { display: flex; flex-direction: column; gap: 24px; }
+
+.photoSection {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.photoWrap {
+  width: 96px; height: 96px;
+  border-radius: 50%;
+  border: 2px dashed var(--gray-200);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.photoWrap:hover { border-color: var(--blue-400); }
+.photoPreview { width: 100%; height: 100%; object-fit: cover; }
+.photoPlaceholder {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.photoPlaceholder span { font-size: 11px; color: var(--gray-400); }
+.photoHint { font-size: 11px; color: var(--gray-400); }
+
+.fields { display: flex; flex-direction: column; gap: 14px; }
+
+.actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid var(--gray-100);
+}
