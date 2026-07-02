@@ -14,9 +14,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
+    // Profilni tahrirlashda 401/403 qaytsa (masalan noto'g'ri parol), tizimdan chiqib ketmasligi kerak
+    const isProfileEndpoint = err.config?.url?.includes('/profile/password') || err.config?.url?.includes('/profile/username');
+    
+    if (!isProfileEndpoint && (err.response?.status === 401 || err.response?.status === 403)) {
       localStorage.removeItem('token')
       localStorage.removeItem('role')
+      localStorage.removeItem('username')
       window.location.href = '/login'
     }
     return Promise.reject(err)
