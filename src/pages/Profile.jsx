@@ -9,29 +9,16 @@ export default function ProfilePage() {
   const { role, username, login, logout } = useAuth()
   const navigate = useNavigate()
 
-  // Fetch real profile on load
-  const [profile, setProfile] = useState({ username: username || '' })
-
-  useEffect(() => {
-    profileApi.getProfile()
-      .then(res => {
-        setProfile(res.data)
-        // update local context with fresh username
-        login(localStorage.getItem('token'), res.data.role, res.data.username)
-      })
-      .catch(console.error)
-  }, [])
-
   // ─── Login (Username) o'zgartirish ───
-  const [userForm, setUserForm] = useState({ username: profile.username || username || '' })
+  const [userForm, setUserForm] = useState({ username: username || '' })
   const [userError, setUserError] = useState('')
   const [userSuccess, setUserSuccess] = useState('')
   const [userLoading, setUserLoading] = useState(false)
 
-  // update the form if profile loaded
+  // update the form if username changes in context
   useEffect(() => {
-    setUserForm({ username: profile.username || username || '' })
-  }, [profile.username, username])
+    setUserForm({ username: username || '' })
+  }, [username])
 
   const handleUserChange = (e) =>
     setUserForm({ username: e.target.value })
@@ -52,7 +39,6 @@ export default function ProfilePage() {
       setUserSuccess("Login muvaffaqiyatli o'zgartirildi")
       // Update local storage and context
       login(localStorage.getItem('token'), role, userForm.username)
-      setProfile((prev) => ({ ...prev, username: userForm.username }))
     } catch (err) {
       if (err.response?.status === 409) {
         setUserError("Bu login (username) band")
@@ -145,7 +131,7 @@ export default function ProfilePage() {
             </svg>
           </div>
           <div className={styles.profileInfo}>
-            <p className={styles.username}>{profile.username}</p>
+            <p className={styles.username}>{username}</p>
             <span className={styles.roleBadge}>{roleLabel}</span>
           </div>
         </div>
