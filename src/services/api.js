@@ -14,10 +14,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Profilni tahrirlashda 401/403 qaytsa (masalan noto'g'ri parol), tizimdan chiqib ketmasligi kerak
-    const isProfileEndpoint = err.config?.url?.includes('/profile/password') || err.config?.url?.includes('/profile/username');
+    // Profilni tahrirlash yoki o'quvchi qo'shishda xato qaytsa, tizimdan chiqib ketmasligi kerak
+    const isExcluded = err.config?.url?.includes('/profile/password') || 
+                       err.config?.url?.includes('/profile/username') ||
+                       (err.config?.url?.includes('/students') && err.config?.method === 'post');
     
-    if (!isProfileEndpoint && (err.response?.status === 401 || err.response?.status === 403)) {
+    if (!isExcluded && (err.response?.status === 401 || err.response?.status === 403)) {
       localStorage.removeItem('token')
       localStorage.removeItem('role')
       localStorage.removeItem('username')

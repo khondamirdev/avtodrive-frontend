@@ -5,7 +5,7 @@ import { Button, Input } from '../components/UI'
 import styles from './AddStudent.module.css'
 
 export default function AddStudentPage() {
-  const [form, setForm]       = useState({ firstName: '', lastName: '', phoneNumber: '+998' })
+  const [form, setForm]       = useState({ firstName: '', lastName: '', phoneNumber: '' })
   const [photo, setPhoto]   = useState(null)
   const [preview, setPreview] = useState(null)
   const [errors, setErrors] = useState({})
