@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { authApi, profileApi } from '../services/api'
@@ -6,8 +6,63 @@ import { Button, Input } from '../components/UI'
 import styles from './Profile.module.css'
 
 export default function ProfilePage() {
-  const { role, username, logout } = useAuth()
+  const { role, username, login, logout } = useAuth()
   const navigate = useNavigate()
+
+  // Fetch real profile on load
+  const [profile, setProfile] = useState({ username: username || '' })
+
+  useEffect(() => {
+    profileApi.getProfile()
+      .then(res => {
+        setProfile(res.data)
+        // update local context with fresh username
+        login(localStorage.getItem('token'), res.data.role, res.data.username)
+      })
+      .catch(console.error)
+  }, [])
+
+  // ─── Login (Username) o'zgartirish ───
+  const [userForm, setUserForm] = useState({ username: profile.username || username || '' })
+  const [userError, setUserError] = useState('')
+  const [userSuccess, setUserSuccess] = useState('')
+  const [userLoading, setUserLoading] = useState(false)
+
+  // update the form if profile loaded
+  useEffect(() => {
+    setUserForm({ username: profile.username || username || '' })
+  }, [profile.username, username])
+
+  const handleUserChange = (e) =>
+    setUserForm({ username: e.target.value })
+
+  const handleUserSubmit = async (e) => {
+    e.preventDefault()
+    setUserError('')
+    setUserSuccess('')
+
+    if (!userForm.username) {
+      setUserError("Login (username) bo'sh bo'lishi mumkin emas")
+      return
+    }
+
+    setUserLoading(true)
+    try {
+      await profileApi.changeUsername({ username: userForm.username })
+      setUserSuccess("Login muvaffaqiyatli o'zgartirildi")
+      // Update local storage and context
+      login(localStorage.getItem('token'), role, userForm.username)
+      setProfile((prev) => ({ ...prev, username: userForm.username }))
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setUserError("Bu login (username) band")
+      } else {
+        setUserError("Xatolik yuz berdi. Qayta urinib ko'ring")
+      }
+    } finally {
+      setUserLoading(false)
+    }
+  }
 
   // ─── Parol o'zgartirish ───
   const [pwForm, setPwForm] = useState({
@@ -90,10 +145,37 @@ export default function ProfilePage() {
             </svg>
           </div>
           <div className={styles.profileInfo}>
-            <p className={styles.username}>{username || 'Admin'}</p>
+            <p className={styles.username}>{profile.username}</p>
             <span className={styles.roleBadge}>{roleLabel}</span>
           </div>
         </div>
+      </div>
+
+      {/* ═══ Loginni o'zgartirish ═══ */}
+      <div className={styles.card}>
+        <h2 className={styles.sectionTitle}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          Loginni (Username) o'zgartirish
+        </h2>
+        <form onSubmit={handleUserSubmit} className={styles.form}>
+          <Input
+            label="Yangi login"
+            name="username"
+            type="text"
+            value={userForm.username}
+            onChange={handleUserChange}
+            placeholder="Yangi username"
+            autoComplete="username"
+          />
+          {userError && <p className={styles.error}>{userError}</p>}
+          {userSuccess && <p className={styles.success}>{userSuccess}</p>}
+          <Button type="submit" loading={userLoading}>
+            Loginni o'zgartirish
+          </Button>
+        </form>
       </div>
 
       {/* ═══ Parol o'zgartirish ═══ */}

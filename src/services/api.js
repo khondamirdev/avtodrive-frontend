@@ -33,7 +33,9 @@ export const adminApi = {
 }
 
 export const profileApi = {
-  changePassword: (data) => api.put('/auth/change-password', data),
+  getProfile: () => api.get('/profile'),
+  changePassword: (data) => api.patch('/profile/password', data),
+  changeUsername: (data) => api.patch('/profile/username', data),
 }
 
 export const studentApi = {
