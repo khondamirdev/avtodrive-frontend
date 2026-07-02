@@ -108,7 +108,7 @@ export default function AddStudentPage() {
               name="firstName"
               value={form.firstName}
               onChange={handleChange}
-              placeholder="Alisher"
+              placeholder="Ism kiriting"
               error={errors.firstName}
             />
             <Input
@@ -116,7 +116,7 @@ export default function AddStudentPage() {
               name="lastName"
               value={form.lastName}
               onChange={handleChange}
-              placeholder="Karimov"
+              placeholder="Familiya kiriting"
               error={errors.lastName}
             />
             <Input

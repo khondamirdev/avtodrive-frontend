@@ -10,7 +10,7 @@ export default function StudentsPage({ status }) {
   const [page, setPage]             = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [search, setSearch]         = useState({ firstName: '', lastName: '' })
-  const [searchInput, setSearchInput] = useState({ firstName: '', lastName: '' })
+  const [searchInput, setSearchInput] = useState('')
   const [deleting, setDeleting]     = useState(null)
   const [confirmId, setConfirmId]   = useState(null)
   const [statusLoading, setStatusLoading] = useState(null)
@@ -38,7 +38,7 @@ export default function StudentsPage({ status }) {
   useEffect(() => {
     setPage(0)
     setSearch({ firstName: '', lastName: '' })
-    setSearchInput({ firstName: '', lastName: '' })
+    setSearchInput('')
   }, [status])
 
   useEffect(() => { fetchStudents() }, [fetchStudents])
@@ -46,7 +46,11 @@ export default function StudentsPage({ status }) {
   const handleSearch = (e) => {
     e.preventDefault()
     setPage(0)
-    setSearch({ ...searchInput })
+    const parts = searchInput.trim().split(/\s+/)
+    setSearch({ 
+       firstName: parts[0] || '', 
+       lastName: parts.slice(1).join(' ') || '' 
+    })
   }
 
   const handleStatusConfirm = async () => {
@@ -91,26 +95,26 @@ export default function StudentsPage({ status }) {
         </div>
 
         <form onSubmit={handleSearch} className={styles.searchRow}>
-          <input
-              className={styles.searchInput}
-              placeholder="Ism"
-              value={searchInput.firstName}
-              onChange={(e) => setSearchInput((s) => ({ ...s, firstName: e.target.value }))}
-          />
-          <input
-              className={styles.searchInput}
-              placeholder="Familiya"
-              value={searchInput.lastName}
-              onChange={(e) => setSearchInput((s) => ({ ...s, lastName: e.target.value }))}
-          />
-          <Button type="submit" variant="secondary">Qidirish</Button>
+          <div className={styles.searchWrap}>
+            <input
+                className={styles.searchInput}
+                placeholder="O'quvchini qidirish..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <button type="submit" className={styles.searchBtn} title="Qidirish">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+          </div>
           {(search.firstName || search.lastName) && (
               <Button
                   type="button"
                   variant="ghost"
                   onClick={() => {
                     setSearch({ firstName: '', lastName: '' })
-                    setSearchInput({ firstName: '', lastName: '' })
+                    setSearchInput('')
                     setPage(0)
                   }}
               >
