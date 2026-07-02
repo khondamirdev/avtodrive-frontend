@@ -25,7 +25,7 @@ export default function LoginPage() {
     setError('')
     try {
       const { data } = await authApi.login(form)
-      login(data.token, data.role)
+      login(data.token, data.role, form.username)
       navigate('/students/registered')
     } catch {
       setError("Username yoki parol noto'g'ri")

@@ -1,9 +1,8 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { authApi } from '../services/api'
 import styles from './Layout.module.css'
 
-const navItems = [
+const mainNavItems = [
   {
     to: '/students/registered',
     label: "Ro'yxatdagilar",
@@ -23,17 +22,18 @@ const navItems = [
       </svg>
     ),
   },
-  {
-    to: '/students/add',
-    label: "O'quvchi qo'shish",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-        <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
-      </svg>
-    ),
-  },
 ]
+
+const addStudentItem = {
+  to: '/students/add',
+  label: "O'quvchi qo'shish",
+  icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+      <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  ),
+}
 
 const superAdminNavItems = [
   {
@@ -48,22 +48,25 @@ const superAdminNavItems = [
   },
 ]
 
+const profileIcon = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+)
+
 export default function Layout({ children }) {
-  const { role, logout } = useAuth()
+  const { role } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogout = async () => {
-    try { await authApi.logout() } catch {}
-    logout()
-    navigate('/login')
-  }
-
-  const items = role === 'SUPER_ADMIN'
-    ? [...navItems, ...superAdminNavItems]
-    : navItems
+  // Desktop sidebar items: all nav + add student + admin (if super)
+  const sidebarItems = role === 'SUPER_ADMIN'
+    ? [...mainNavItems, addStudentItem, ...superAdminNavItems]
+    : [...mainNavItems, addStudentItem]
 
   return (
     <div className={styles.root}>
+      {/* ═══ DESKTOP SIDEBAR ═══ */}
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
           <img src="/logo.png" alt="AvtoDrive Pro" width="28" height="28" style={{ borderRadius: '50%' }} />
@@ -71,12 +74,12 @@ export default function Layout({ children }) {
         </div>
 
         <nav className={styles.nav}>
-          {items.map((item) => (
-              <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end
-                  className={({ isActive }) =>
+          {sidebarItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end
+              className={({ isActive }) =>
                 `${styles.navItem} ${isActive ? styles.active : ''}`
               }
             >
@@ -90,17 +93,65 @@ export default function Layout({ children }) {
           <div className={styles.roleTag}>
             {role === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin'}
           </div>
-          <button className={styles.logoutBtn} onClick={handleLogout}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Chiqish
-          </button>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `${styles.navItem} ${styles.profileLink} ${isActive ? styles.active : ''}`
+            }
+          >
+            {profileIcon}
+            <span>Profil</span>
+          </NavLink>
         </div>
       </aside>
 
+      {/* ═══ MOBILE HEADER ═══ */}
+      <header className={styles.mobileHeader}>
+        <div className={styles.mobileHeaderTop}>
+          <div className={styles.logo}>
+            <img src="/logo.png" alt="AvtoDrive Pro" width="26" height="26" style={{ borderRadius: '50%' }} />
+            <span className={styles.logoText}>AvtoDrive Pro</span>
+          </div>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `${styles.profileBtn} ${isActive ? styles.profileBtnActive : ''}`
+            }
+          >
+            {profileIcon}
+          </NavLink>
+        </div>
+        <nav className={styles.mobileTabs}>
+          {mainNavItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end
+              className={({ isActive }) =>
+                `${styles.mobileTab} ${isActive ? styles.mobileTabActive : ''}`
+              }
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </header>
+
+      {/* ═══ MAIN CONTENT ═══ */}
       <main className={styles.main}>{children}</main>
+
+      {/* ═══ FAB — O'quvchi qo'shish (mobile only) ═══ */}
+      <button
+        className={styles.fab}
+        onClick={() => navigate('/students/add')}
+        title="O'quvchi qo'shish"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </button>
     </div>
   )
 }

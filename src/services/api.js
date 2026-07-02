@@ -32,6 +32,10 @@ export const adminApi = {
   addAdmin: (data) => api.post('/admin/add', data),
 }
 
+export const profileApi = {
+  changePassword: (data) => api.put('/auth/change-password', data),
+}
+
 export const studentApi = {
   create: (formData) =>
     api.post('/students', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),

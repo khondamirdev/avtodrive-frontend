@@ -5,6 +5,7 @@ import LoginPage from './pages/Login'
 import StudentsPage from './pages/Students'
 import AddStudentPage from './pages/AddStudent'
 import AddAdminPage from './pages/AddAdmin'
+import ProfilePage from './pages/Profile'
 
 function PrivateRoute({ children, superAdminOnly }) {
     const { isAuth, role } = useAuth()
@@ -50,6 +51,14 @@ function AppRoutes() {
                 element={
                     <PrivateRoute superAdminOnly>
                         <Layout><AddAdminPage /></Layout>
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/profile"
+                element={
+                    <PrivateRoute>
+                        <Layout><ProfilePage /></Layout>
                     </PrivateRoute>
                 }
             />
