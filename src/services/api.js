@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8081'
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL + '/api',
+  baseURL: BASE + '/api',
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -14,15 +16,19 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Profilni tahrirlash yoki o'quvchi qo'shishda xato qaytsa, tizimdan chiqib ketmasligi kerak
-    const isExcluded = err.config?.url?.includes('/profile/password') || 
-                       err.config?.url?.includes('/profile/username') ||
-                       (err.config?.url?.includes('/students') && err.config?.method === 'post');
-    
-    if (!isExcluded && (err.response?.status === 401 || err.response?.status === 403)) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('role')
-      localStorage.removeItem('username')
+    const url = err.config?.url || ''
+    const method = err.config?.method || ''
+    const status = err.response?.status
+
+    const isExcluded =
+      url.includes('/profile/password') ||
+      url.includes('/profile/username') ||
+      (url.includes('/students') && method === 'post') ||
+      (url.includes('/students') && method === 'put') ||
+      url.includes('/admin/add')
+
+    if (!isExcluded && (status === 401 || status === 403)) {
+      localStorage.clear()
       window.location.href = '/login'
     }
     return Promise.reject(err)
@@ -34,14 +40,17 @@ export const authApi = {
   logout: () => api.post('/auth/logout'),
 }
 
-export const adminApi = {
-  addAdmin: (data) => api.post('/admin/add', data),
-}
-
 export const profileApi = {
   getProfile: () => api.get('/profile'),
   changePassword: (data) => api.patch('/profile/password', data),
   changeUsername: (data) => api.patch('/profile/username', data),
+}
+
+export const adminApi = {
+  addAdmin: (data) => api.post('/admin/add', data),
+  getAllAdmins: () => api.get('/admin'),
+  getAdminStudents: (adminId, page = 0, size = 24) =>
+    api.get(`/admin/${adminId}/students`, { params: { page, size } }),
 }
 
 export const studentApi = {
@@ -49,13 +58,22 @@ export const studentApi = {
     api.post('/students', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   getAll: (status, page = 0, size = 24) =>
     api.get('/students', { params: { status, page, size } }),
+  getOne: (id) => api.get(`/students/${id}`),
   search: (firstName = '', lastName = '', page = 0, size = 24) =>
     api.get('/students/search', { params: { firstName, lastName, page, size } }),
+  update: (id, formData) =>
+    api.put(`/students/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateStatus: (id, status) =>
     api.patch(`/students/${id}/status`, { status }),
   delete: (id) => api.delete(`/students/${id}`),
-  update: (id, formData) =>
-      api.put(`/students/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 }
+
+export const paymentApi = {
+  add: (studentId, data) => api.post(`/students/${studentId}/payments`, data),
+  getAll: (studentId) => api.get(`/students/${studentId}/payments`),
+  delete: (studentId, paymentId) => api.delete(`/students/${studentId}/payments/${paymentId}`),
+}
+
+export const fileUrl = (path) => path ? `${BASE}/${path}` : null
 
 export default api

@@ -1,19 +1,31 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { studentApi } from '../services/api'
-import { Button, Input } from '../components/UI'
+import { Button, Input, Spinner } from '../components/UI'
 import styles from './AddStudent.module.css'
 
-export default function AddStudentPage() {
-  const [form, setForm] = useState({ firstName: '', lastName: '', phoneNumber: '+998', totalAmount: '' })
+export default function EditStudentPage() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ firstName: '', lastName: '', phoneNumber: '', totalAmount: '' })
   const [passportPhoto, setPassportPhoto] = useState(null)
   const [form083, setForm083]   = useState(null)
   const [errors, setErrors]     = useState({})
   const [loading, setLoading]   = useState(false)
-  const [success, setSuccess]   = useState(false)
+  const [fetching, setFetching] = useState(true)
   const passportRef = useRef()
   const form083Ref  = useRef()
-  const navigate    = useNavigate()
+
+  useEffect(() => {
+    studentApi.getOne(id).then(({ data }) => {
+      setForm({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber || '+998',
+        totalAmount: data.totalAmount?.toString() || '',
+      })
+    }).finally(() => setFetching(false))
+  }, [id])
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
 
@@ -46,9 +58,8 @@ export default function AddStudentPage() {
     if (form083)       fd.append('form083', form083)
 
     try {
-      await studentApi.create(fd)
-      setSuccess(true)
-      setTimeout(() => navigate('/students/registered'), 1200)
+      await studentApi.update(id, fd)
+      navigate(`/students/${id}`)
     } catch (err) {
       const msg = err.response?.data?.message || ''
       if (msg.toLowerCase().includes('phone')) {
@@ -59,6 +70,8 @@ export default function AddStudentPage() {
     } finally { setLoading(false) }
   }
 
+  if (fetching) return <Spinner />
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -67,24 +80,23 @@ export default function AddStudentPage() {
             <path d="m15 18-6-6 6-6"/>
           </svg>
         </button>
-        <h1 className={styles.title}>O'quvchi qo'shish</h1>
+        <h1 className={styles.title}>O'quvchini tahrirlash</h1>
       </div>
 
-      {success && <div className={styles.successBanner}>✓ Muvaffaqiyatli qo'shildi</div>}
       {errors.form && <div className={styles.errorBanner}>{errors.form}</div>}
 
       <div className={styles.card}>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <Input label="Ism" name="firstName" value={form.firstName} onChange={handleChange} placeholder="Alisher" error={errors.firstName} />
-          <Input label="Familiya" name="lastName" value={form.lastName} onChange={handleChange} placeholder="Karimov" error={errors.lastName} />
+          <Input label="Ism" name="firstName" value={form.firstName} onChange={handleChange} error={errors.firstName} />
+          <Input label="Familiya" name="lastName" value={form.lastName} onChange={handleChange} error={errors.lastName} />
           <Input label="Telefon (ixtiyoriy)" name="phoneNumber" value={form.phoneNumber} onChange={handleChange} placeholder="+998901234567" error={errors.phoneNumber} />
           <Input label="Kelishilgan narx (so'm)" name="totalAmount" type="number" value={form.totalAmount} onChange={handleChange} placeholder="5000000" />
 
           <div className={styles.fileSection}>
-            <label className={styles.fileLabel}>Pasport rasmi (ixtiyoriy)</label>
+            <label className={styles.fileLabel}>Pasport rasmi (yangilash)</label>
             <div className={styles.fileRow}>
               <button type="button" className={styles.fileBtn} onClick={() => passportRef.current.click()}>
-                {passportPhoto ? `✓ ${passportPhoto.name}` : '+ Fayl tanlash'}
+                {passportPhoto ? `✓ ${passportPhoto.name}` : '+ Yangi fayl'}
               </button>
               {passportPhoto && <button type="button" className={styles.fileRemove} onClick={() => setPassportPhoto(null)}>✕</button>}
             </div>
@@ -92,10 +104,10 @@ export default function AddStudentPage() {
           </div>
 
           <div className={styles.fileSection}>
-            <label className={styles.fileLabel}>083 forma (ixtiyoriy)</label>
+            <label className={styles.fileLabel}>083 forma (yangilash)</label>
             <div className={styles.fileRow}>
               <button type="button" className={styles.fileBtn} onClick={() => form083Ref.current.click()}>
-                {form083 ? `✓ ${form083.name}` : '+ Fayl tanlash'}
+                {form083 ? `✓ ${form083.name}` : '+ Yangi fayl'}
               </button>
               {form083 && <button type="button" className={styles.fileRemove} onClick={() => setForm083(null)}>✕</button>}
             </div>
