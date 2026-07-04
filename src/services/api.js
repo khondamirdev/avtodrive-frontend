@@ -27,7 +27,7 @@ api.interceptors.response.use(
       (url.includes('/students') && method === 'put') ||
       url.includes('/admin')
 
-    if (!isExcluded && (status === 401 || status === 403)) {
+    if (!isExcluded && status === 401) {
       localStorage.clear()
       window.location.href = '/login'
     }
