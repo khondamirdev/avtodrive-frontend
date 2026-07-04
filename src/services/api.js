@@ -25,7 +25,7 @@ api.interceptors.response.use(
       url.includes('/profile/username') ||
       (url.includes('/students') && method === 'post') ||
       (url.includes('/students') && method === 'put') ||
-      url.includes('/admin/add')
+      url.includes('/admin')
 
     if (!isExcluded && (status === 401 || status === 403)) {
       localStorage.clear()
